@@ -1,57 +1,52 @@
-#include <xcb/xcb.h>
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 
-int main(void)
+#include "config.h"
+
+int main(int argc, char *argv[])
 {
-	xcb_connection_t *conn;
-	xcb_screen_t *screen;
-	xcb_window_t window;
-	uint32_t mask;
-	uint32_t values[2];
+	Display *display = XOpenDisplay(NULL);
+	XEvent event;
 
-	conn = xcb_connect(NULL, NULL);
-	if (xcb_connection_has_error(conn)) {
-		printf("Cannot open display\n");
+	if (display == NULL)
+	{
+		fprintf(stderr, "Cannot open display\n");
 		exit(EXIT_FAILURE);
 	}
 
-	screen = xcb_setup_roots_iterator( xcb_get_setup(conn) ).data;
+	int screen = DefaultScreen(display);
 
-	window = xcb_generate_id(conn);
+	int window_width = DisplayWidth(display, screen);
+	int widnow_height = DisplayHeight(display, screen);
 
-	int width = 200;
-	int height = 60;
+	Window root = RootWindow(display, screen);
+	XSetWindowAttributes attributes;
+	attributes.override_redirect = True;
+	attributes.background_pixel = background_color;
+	attributes.border_pixel = border_color;
 
-	uint32_t back = 0xFFFFFF;
+	XftColor color;
+	char *status = "Ahoj volam sa samko netahaj mi stolicku lebo ta ujebem ty hovafoooooo";
+	XftFont *font = XftFontOpenName(display, screen, font_style);
 
-	int sw = screen->width_in_pixels;
-	int sh = screen->height_in_pixels;
+	Window window = XCreateWindow(
+		display, root, pos_x,
+		pos_y, width, font->ascent + 10 + border_size, border_size,
+		DefaultDepth(display, screen), CopyFromParent,
+		DefaultVisual(display, screen),
+		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
-	int padding_x = 30;
-	int padding_y = 50;
+	XftDraw *draw = XftDrawCreate(display, window, DefaultVisual(display, screen), DefaultColormap(display, screen));
+	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), "#000000", &color);
 
-	int pos_x = sw - width - padding_x;
-	int pos_y = padding_y;
+	XMapWindow(display, window);
 
-	mask = XCB_CW_BACK_PIXEL | XCB_CW_OVERRIDE_REDIRECT;
+	XftDrawString8(draw, &color, font, 5, font->ascent + 5, (XftChar8 *)argv[1], strlen(argv[1]));
 
-	values[0] = back;
-	values[1] = 1;
+	XNextEvent(display, &event);
 
-	xcb_create_window(conn, screen->root_depth, 
-			window, screen->root, pos_x, pos_y, width, height, 1,
-			XCB_WINDOW_CLASS_INPUT_OUTPUT, 
-			screen->root_visual, mask, values);
-
-	xcb_map_window(conn, window);
-	xcb_flush(conn);
-
-	sleep(30);
-
-	xcb_disconnect(conn);
-
-	exit(EXIT_SUCCESS);
+	sleep(duration);
 }
