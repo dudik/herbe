@@ -36,19 +36,20 @@ int main(int argc, char *argv[])
 
 	unsigned short x = pos_x;
 	unsigned short y = pos_y;
+	int height = font->ascent - font->descent + text_padding * 2;
 	switch (corner) {
 		case down_right:
-			y = window_height - height + 5;
+			y = window_height - height - border_size * 2 - pos_y;
 		case top_right:
 			x = window_width - width - border_size * 2 - pos_x;
 			break;
 		case down_left:
-			y = window_height - height + 5;
+			y = window_height - height - border_size * 2 - pos_y;
 	}
 
 	Window window = XCreateWindow(
 		display, root, x,
-		y, width, font->ascent + 10 + border_size, border_size,
+		y, width, height, border_size,
 		DefaultDepth(display, screen), CopyFromParent,
 		DefaultVisual(display, screen),
 		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
@@ -58,7 +59,9 @@ int main(int argc, char *argv[])
 
 	XMapWindow(display, window);
 
-	XftDrawString8(draw, &color, font, 5, font->ascent + 5, (XftChar8 *)argv[1], strlen(argv[1]));
+	XftDrawString8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
+
+	// TODO free xftcolor
 
 	XNextEvent(display, &event);
 
