@@ -20,27 +20,41 @@ int main(int argc, char *argv[])
 	int screen = DefaultScreen(display);
 
 	int window_width = DisplayWidth(display, screen);
-	int widnow_height = DisplayHeight(display, screen);
+	int window_height = DisplayHeight(display, screen);
+
+	XftColor color;
 
 	Window root = RootWindow(display, screen);
 	XSetWindowAttributes attributes;
 	attributes.override_redirect = True;
-	attributes.background_pixel = background_color;
-	attributes.border_pixel = border_color;
+	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), background_color, &color);
+	attributes.background_pixel = color.pixel;
+	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), border_color, &color);
+	attributes.border_pixel = color.pixel;
 
-	XftColor color;
-	char *status = "Ahoj volam sa samko netahaj mi stolicku lebo ta ujebem ty hovafoooooo";
 	XftFont *font = XftFontOpenName(display, screen, font_style);
 
+	unsigned short x = pos_x;
+	unsigned short y = pos_y;
+	switch (corner) {
+		case down_right:
+			y = window_height - height + 5;
+		case top_right:
+			x = window_width - width - border_size * 2 - pos_x;
+			break;
+		case down_left:
+			y = window_height - height + 5;
+	}
+
 	Window window = XCreateWindow(
-		display, root, pos_x,
-		pos_y, width, font->ascent + 10 + border_size, border_size,
+		display, root, x,
+		y, width, font->ascent + 10 + border_size, border_size,
 		DefaultDepth(display, screen), CopyFromParent,
 		DefaultVisual(display, screen),
 		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
 	XftDraw *draw = XftDrawCreate(display, window, DefaultVisual(display, screen), DefaultColormap(display, screen));
-	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), "#000000", &color);
+	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), font_color, &color);
 
 	XMapWindow(display, window);
 
@@ -49,4 +63,7 @@ int main(int argc, char *argv[])
 	XNextEvent(display, &event);
 
 	sleep(duration);
+
+	XCloseDisplay(display);
+	return 0;
 }
