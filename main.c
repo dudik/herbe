@@ -2,13 +2,28 @@
 #include <X11/Xft/Xft.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "config.h"
 
+Display *display;
+Window window;
+
+void expire()
+{
+	XEvent event;
+	event.type = ButtonPress;
+	XSendEvent(display, window, 0, 0, &event);
+	XFlush(display);
+}
+
 int main(int argc, char *argv[])
 {
-	Display *display = XOpenDisplay(NULL);
-	XEvent event;
+	signal(SIGALRM, expire);
+	alarm(duration);
+
+	display = XOpenDisplay(NULL);
 
 	if (display == NULL)
 	{
@@ -36,17 +51,18 @@ int main(int argc, char *argv[])
 	unsigned short x = pos_x;
 	unsigned short y = pos_y;
 	int height = font->ascent - font->descent + text_padding * 2;
-	switch (corner) {
-		case down_right:
-			y = window_height - height - border_size * 2 - pos_y;
-		case top_right:
-			x = window_width - width - border_size * 2 - pos_x;
-			break;
-		case down_left:
-			y = window_height - height - border_size * 2 - pos_y;
+	switch (corner)
+	{
+	case down_right:
+		y = window_height - height - border_size * 2 - pos_y;
+	case top_right:
+		x = window_width - width - border_size * 2 - pos_x;
+		break;
+	case down_left:
+		y = window_height - height - border_size * 2 - pos_y;
 	}
 
-	Window window = XCreateWindow(
+	window = XCreateWindow(
 		display, root, x,
 		y, width, height, border_size,
 		DefaultDepth(display, screen), CopyFromParent,
@@ -61,6 +77,8 @@ int main(int argc, char *argv[])
 	XMapWindow(display, window);
 
 	// TODO free xftcolor
+
+	XEvent event;
 
 	while (1)
 	{
