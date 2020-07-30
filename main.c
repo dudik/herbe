@@ -2,7 +2,6 @@
 #include <X11/Xft/Xft.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "config.h"
 
@@ -57,15 +56,23 @@ int main(int argc, char *argv[])
 	XftDraw *draw = XftDrawCreate(display, window, DefaultVisual(display, screen), DefaultColormap(display, screen));
 	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), font_color, &color);
 
-	XMapWindow(display, window);
+	XSelectInput(display, window, ExposureMask | ButtonPress);
 
-	XftDrawString8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
+	XMapWindow(display, window);
 
 	// TODO free xftcolor
 
-	XNextEvent(display, &event);
+	while (1)
+	{
+		XNextEvent(display, &event);
 
-	sleep(duration);
+		if (event.type == Expose)
+		{
+			XftDrawString8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
+		}
+		if (event.type == ButtonPress)
+			break;
+	}
 
 	XCloseDisplay(display);
 	return 0;
