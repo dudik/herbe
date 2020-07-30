@@ -20,6 +20,11 @@ void expire()
 
 int main(int argc, char *argv[])
 {
+	if (argc != 2) {
+		fprintf(stderr, "Usage: herbe message\n");
+		exit(EXIT_FAILURE);
+	}
+
 	signal(SIGALRM, expire);
 	alarm(duration);
 
@@ -53,21 +58,21 @@ int main(int argc, char *argv[])
 	int height = font->ascent - font->descent + text_padding * 2;
 	switch (corner)
 	{
-	case down_right:
-		y = window_height - height - border_size * 2 - pos_y;
-	case top_right:
-		x = window_width - width - border_size * 2 - pos_x;
-		break;
-	case down_left:
-		y = window_height - height - border_size * 2 - pos_y;
+		case down_right:
+			y = window_height - height - border_size * 2 - pos_y;
+		case top_right:
+			x = window_width - width - border_size * 2 - pos_x;
+			break;
+		case down_left:
+			y = window_height - height - border_size * 2 - pos_y;
 	}
 
 	window = XCreateWindow(
-		display, root, x,
-		y, width, height, border_size,
-		DefaultDepth(display, screen), CopyFromParent,
-		DefaultVisual(display, screen),
-		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
+			display, root, x,
+			y, width, height, border_size,
+			DefaultDepth(display, screen), CopyFromParent,
+			DefaultVisual(display, screen),
+			CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
 	XftDraw *draw = XftDrawCreate(display, window, DefaultVisual(display, screen), DefaultColormap(display, screen));
 	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), font_color, &color);
@@ -75,8 +80,6 @@ int main(int argc, char *argv[])
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 
 	XMapWindow(display, window);
-
-	// TODO free xftcolor
 
 	XEvent event;
 
@@ -92,6 +95,10 @@ int main(int argc, char *argv[])
 		if (event.type == ButtonPress)
 			break;
 	}
+
+	XftDrawDestroy(draw);
+	XftColorFree(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &color);
+	XftFontClose(display, font);
 
 	XCloseDisplay(display);
 	return 0;
