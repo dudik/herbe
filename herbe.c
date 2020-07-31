@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 
 	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
-	unsigned short x = pos_x;
-	unsigned short y = pos_y;
-	unsigned short height = font->ascent - font->descent + padding * 2;
+	unsigned int x = pos_x;
+	unsigned int y = pos_y;
+	unsigned int height = font->ascent - font->descent + padding * 2;
 
 	switch (corner)
 	{
