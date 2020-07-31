@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			XftDrawString8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
+			XftDrawStringUtf8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
 		}
 		if (event.type == ButtonPress)
 			break;
