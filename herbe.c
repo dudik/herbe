@@ -20,7 +20,8 @@ void expire()
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2) {
+	if (argc != 2)
+	{
 		fprintf(stderr, "Usage: herbe message\n");
 		exit(EXIT_FAILURE);
 	}
@@ -37,45 +38,47 @@ int main(int argc, char *argv[])
 	}
 
 	int screen = DefaultScreen(display);
+	Visual *visual = DefaultVisual(display, screen);
+	Colormap colormap = DefaultColormap(display, screen);
 
 	int window_width = DisplayWidth(display, screen);
 	int window_height = DisplayHeight(display, screen);
 
 	XftColor color;
 
-	Window root = RootWindow(display, screen);
 	XSetWindowAttributes attributes;
 	attributes.override_redirect = True;
-	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), background_color, &color);
+	XftColorAllocName(display, visual, colormap, background_color, &color);
 	attributes.background_pixel = color.pixel;
-	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), border_color, &color);
+	XftColorAllocName(display, visual, colormap, border_color, &color);
 	attributes.border_pixel = color.pixel;
 
-	XftFont *font = XftFontOpenName(display, screen, font_style);
+	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
 	unsigned short x = pos_x;
 	unsigned short y = pos_y;
-	int height = font->ascent - font->descent + text_padding * 2;
+	unsigned short height = font->ascent - font->descent + padding * 2;
+
 	switch (corner)
 	{
-		case down_right:
-			y = window_height - height - border_size * 2 - pos_y;
-		case top_right:
-			x = window_width - width - border_size * 2 - pos_x;
-			break;
-		case down_left:
-			y = window_height - height - border_size * 2 - pos_y;
+	case BOTTOM_RIGHT:
+		y = window_height - height - border_size * 2 - pos_y;
+	case TOP_RIGHT:
+		x = window_width - width - border_size * 2 - pos_x;
+		break;
+	case BOTTOM_LEFT:
+		y = window_height - height - border_size * 2 - pos_y;
 	}
 
 	window = XCreateWindow(
-			display, root, x,
-			y, width, height, border_size,
-			DefaultDepth(display, screen), CopyFromParent,
-			DefaultVisual(display, screen),
-			CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
+		display, RootWindow(display, screen), x,
+		y, width, height, border_size,
+		DefaultDepth(display, screen), CopyFromParent,
+		visual,
+		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
-	XftDraw *draw = XftDrawCreate(display, window, DefaultVisual(display, screen), DefaultColormap(display, screen));
-	XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), font_color, &color);
+	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
+	XftColorAllocName(display, visual, colormap, font_color, &color);
 
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 
@@ -90,16 +93,16 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			XftDrawStringUtf8(draw, &color, font, text_padding, height - text_padding, (XftChar8 *)argv[1], strlen(argv[1]));
+			XftDrawStringUtf8(draw, &color, font, padding, height - padding, (XftChar8 *)argv[1], strlen(argv[1]));
 		}
 		if (event.type == ButtonPress)
 			break;
 	}
 
 	XftDrawDestroy(draw);
-	XftColorFree(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &color);
+	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
 
 	XCloseDisplay(display);
-	return 0;
+	return EXIT_SUCCESS;
 }
