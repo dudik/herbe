@@ -10,6 +10,29 @@
 Display *display;
 Window window;
 
+int get_eol(char *body, XftFont *font)
+{
+	int body_len = strlen(body);
+	XGlyphInfo info;
+	XftTextExtentsUtf8(display, font, body, body_len, &info);
+
+	int max_text_width = width - 2 * padding;
+
+	if (info.width < max_text_width)
+		return body_len;
+
+	int eol = max_text_width / font->max_advance_width;
+	info.width = 0;
+
+	while (info.width < max_text_width)
+	{
+		eol++;
+		XftTextExtentsUtf8(display, font, body, eol, &info);
+	}
+
+	return --eol;
+}
+
 void expire()
 {
 	XEvent event;
@@ -25,6 +48,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Usage: herbe message\n");
 		exit(EXIT_FAILURE);
 	}
+
+	char *body = argv[1];
 
 	signal(SIGALRM, expire);
 	alarm(duration);
@@ -84,6 +109,8 @@ int main(int argc, char *argv[])
 
 	XMapWindow(display, window);
 
+	int eol = get_eol(body, font);
+
 	XEvent event;
 
 	while (1)
@@ -93,7 +120,7 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			XftDrawStringUtf8(draw, &color, font, padding, height - padding, (XftChar8 *)argv[1], strlen(argv[1]));
+			XftDrawStringUtf8(draw, &color, font, padding, height - padding, body, eol);
 		}
 		if (event.type == ButtonPress)
 			break;

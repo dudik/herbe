@@ -2,7 +2,7 @@ const static char *background_color = "#3e3e3e";
 const static char *border_color = "#ececec";
 const static char *font_color = "#ececec";
 const static char *font_pattern = "Inconsolata:style=Medium:size=15";
-const static unsigned int padding = 20;
+const static unsigned int padding = 15;
 
 const static unsigned int width = 300;
 const static unsigned int border_size = 2;
