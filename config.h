@@ -5,7 +5,7 @@ const static char *font_pattern = "Inconsolata:style=Medium:size=13";
 const static unsigned line_spacing = 5;
 const static unsigned int padding = 15;
 
-const static unsigned int width = 200;
+const static unsigned int width = 400;
 const static unsigned int border_size = 2;
 const static unsigned int pos_x = 30;
 const static unsigned int pos_y = 50;
