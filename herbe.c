@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "config.h"
 
@@ -31,6 +32,16 @@ int get_eol(char *body, XftFont *font)
 	}
 
 	return --eol;
+
+	// if (body[eol] == ' ')
+	// 	return --eol;
+
+	// while (body[eol] != ' ')
+	// {
+	// 	eol--;
+	// }
+
+	// return ++eol;
 }
 
 void expire()
@@ -95,9 +106,13 @@ int main(int argc, char *argv[])
 		y = window_height - height - border_size * 2 - pos_y;
 	}
 
+	XGlyphInfo info;
+	XftTextExtentsUtf8(display, font, body, strlen(body), &info);
+	int num_of_lines = ceil((float)info.width / (width - 2 * padding));
+
 	window = XCreateWindow(
 		display, RootWindow(display, screen), x,
-		y, width, height, border_size,
+		y, width, (num_of_lines - 1) * 5 + num_of_lines * (font->ascent - font->descent) + 2 * padding, border_size,
 		DefaultDepth(display, screen), CopyFromParent,
 		visual,
 		CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
@@ -109,7 +124,13 @@ int main(int argc, char *argv[])
 
 	XMapWindow(display, window);
 
-	int eol = get_eol(body, font);
+	int eols[num_of_lines + 1];
+	eols[0] = 0;
+
+	for (int i = 1; i < num_of_lines + 1; i++)
+	{
+		eols[i] = eols[i - 1] + get_eol(body + eols[i - 1], font);
+	}
 
 	XEvent event;
 
@@ -120,7 +141,11 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			XftDrawStringUtf8(draw, &color, font, padding, height - padding, body, eol);
+
+			for (int i = 1; i < num_of_lines + 1; i++)
+			{
+				XftDrawStringUtf8(draw, &color, font, padding, 5 * (i - 1) + (font->ascent - font->descent) * i + padding, body + eols[i - 1], eols[i] - eols[i - 1]);
+			}
 		}
 		if (event.type == ButtonPress)
 			break;

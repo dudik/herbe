@@ -1,5 +1,5 @@
 default:
-	gcc herbe.c -lX11 -lXft -I/usr/include/freetype2 -o herbe
+	gcc herbe.c -lX11 -lXft -I/usr/include/freetype2 -lm -o herbe
 
 install: default
 	cp herbe /usr/local/bin
