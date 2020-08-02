@@ -89,10 +89,15 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		while (body[eols[num_of_lines - 1] + eol] != ' ')
+		int temp = eol;
+
+		while (body[eols[num_of_lines - 1] + eol] != ' ' && eol)
 			--eol;
 
-		eol++;
+		if (eol == 0)
+			eol = temp;
+		else
+			eol++;
 
 		remainder -= eol;
 		if (eols_size < num_of_lines + 1)
