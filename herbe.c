@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 		while (info.width < max_text_width)
 		{
 			eol++;
-			XftTextExtentsUtf8(display, font, body, eol, &info);
+			XftTextExtentsUtf8(display, font, body + eols[num_of_lines - 1], eol, &info);
 		}
 
 		--eol;
