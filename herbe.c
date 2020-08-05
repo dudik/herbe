@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 		while (info.width < max_text_width)
 		{
 			eol++;
-			XftTextExtentsUtf8(display, font, body + eols[num_of_lines - 1], eol, &info);
+			XftTextExtentsUtf8(display, font, (FcChar8 *)body + eols[num_of_lines - 1], eol, &info);
 		}
 
 		--eol;
@@ -114,16 +114,11 @@ int main(int argc, char *argv[])
 	unsigned int text_height = font->ascent - font->descent;
 	unsigned int height = (num_of_lines - 2) * line_spacing + (num_of_lines - 1) * text_height + 2 * padding;
 
-	switch (corner)
-	{
-	case BOTTOM_RIGHT:
-		y = screen_height - height - border_size * 2 - pos_y;
-	case TOP_RIGHT:
+	if (corner == TOP_RIGHT || corner == BOTTOM_RIGHT)
 		x = screen_width - width - border_size * 2 - pos_x;
-		break;
-	case BOTTOM_LEFT:
+
+	if (corner == BOTTOM_LEFT || corner == BOTTOM_RIGHT)
 		y = screen_height - height - border_size * 2 - pos_y;
-	}
 
 	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen), CopyFromParent, visual,
 						   CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
@@ -145,7 +140,7 @@ int main(int argc, char *argv[])
 		{
 			XClearWindow(display, window);
 			for (int i = 1; i < num_of_lines; i++)
-				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * (i - 1) + text_height * i + padding, body + eols[i - 1], eols[i] - eols[i - 1]);
+				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * (i - 1) + text_height * i + padding, (FcChar8 *)body + eols[i - 1], eols[i] - eols[i - 1]);
 		}
 		if (event.type == ButtonPress)
 			break;
