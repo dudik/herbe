@@ -1,5 +1,6 @@
 # 🌱 herbe
 > Daemon-less notifications without D-Bus. Minimal and lightweight.
+
 ![herbe](https://raw.githubusercontent.com/dudik/herbe/master/herbe.png)
 
 ## Usage
