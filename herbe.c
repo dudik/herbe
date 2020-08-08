@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -60,9 +61,9 @@ int main(int argc, char *argv[])
 	signal(SIGALRM, expire);
 	alarm(duration);
 
-	display = XOpenDisplay(NULL);
+	display = XOpenDisplay(0);
 
-	if (display == NULL)
+	if (display == 0)
 	{
 		fprintf(stderr, "Cannot open display\n");
 		exit(EXIT_FAILURE);
@@ -123,10 +124,9 @@ int main(int argc, char *argv[])
 
 	XMapWindow(display, window);
 
-	XEvent event;
-
 	while (1)
 	{
+		XEvent event;
 		XNextEvent(display, &event);
 
 		if (event.type == Expose)
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 	XftDrawDestroy(draw);
 	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
-
 	XCloseDisplay(display);
+
 	return EXIT_SUCCESS;
 }
