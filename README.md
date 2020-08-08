@@ -1,21 +1,12 @@
 # 🌱 herbe
 > Daemon-less notifications without D-Bus. Minimal and lightweight.
+![herbe](https://raw.githubusercontent.com/dudik/herbe/master/herbe.png)
 
 ## Usage
 ```shell
-herbe "This is a notification"
+herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Minimal and lightweight."
 ```
-will display a notification for the duration set in `config.h` that says `This is a notification`
-
-## TODO
-herbe is still a WIP.
-* Title support
-* Refactor code, it is not very readable
-
-Not really sure about these, are they minimal, will someone use them?
-* Line breaks formatting
-* Icon/image support
-* Command-line options (change settings)
+will display the notification shown above
 
 ## Installation
 ### Dependencies
