@@ -13,4 +13,4 @@ static const unsigned int pos_y = 50;
 enum corners { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT };
 enum corners corner = TOP_RIGHT;
 
-static const unsigned int duration = 15; /* in seconds */
+static const unsigned int duration = 60; /* in seconds */

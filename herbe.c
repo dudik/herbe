@@ -10,6 +10,37 @@
 Display *display;
 Window window;
 
+int get_max_len(char *body, XftFont *font, int max_text_width)
+{
+	int body_len = strlen(body);
+	XGlyphInfo info;
+	XftTextExtentsUtf8(display, font, (FcChar8 *)body, body_len, &info);
+
+	if (info.width < max_text_width)
+		return body_len;
+
+	int eol = max_text_width / font->max_advance_width;
+	info.width = 0;
+
+	while (info.width < max_text_width)
+	{
+		eol++;
+		XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+	}
+
+	eol--;
+
+	int temp = eol;
+
+	while (body[eol] != ' ' && eol)
+		--eol;
+
+	if (eol == 0)
+		return temp;
+	else
+		return ++eol;
+}
+
 void expire()
 {
 	XEvent event;
@@ -20,13 +51,11 @@ void expire()
 
 int main(int argc, char *argv[])
 {
-	if (argc != 2)
+	if (argc == 1)
 	{
-		fprintf(stderr, "Usage: herbe message\n");
+		fprintf(stderr, "Usage: herbe body\n");
 		exit(EXIT_FAILURE);
 	}
-
-	char *body = argv[1];
 
 	signal(SIGALRM, expire);
 	alarm(duration);
@@ -57,62 +86,26 @@ int main(int argc, char *argv[])
 
 	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
+	int num_of_lines = 0;
 	int max_text_width = width - 2 * padding;
-	int eols_size = 5;
-	int *eols = malloc(eols_size * sizeof(int));
-	eols[0] = 0;
-	int remainder = strlen(body);
-	int num_of_lines = 1;
+	// TODO replace hard-coded size 100
+	char words[100][max_text_width / font->max_advance_width + 2];
 
-	while (1)
+	for (int i = 1; i < argc; i++)
 	{
-		XGlyphInfo info;
-		info.width = 0;
-		int eol = max_text_width / font->max_advance_width;
-		while (info.width < max_text_width)
+		char *body = argv[i];
+
+		for (unsigned int eol = get_max_len(body, font, max_text_width); eol <= strlen(body) && eol; body += eol, num_of_lines++, eol = get_max_len(body, font, max_text_width))
 		{
-			eol++;
-			XftTextExtentsUtf8(display, font, (FcChar8 *)body + eols[num_of_lines - 1], eol, &info);
+			strncpy(words[num_of_lines], body, eol);
+			words[num_of_lines][eol] = '\0';
 		}
-
-		--eol;
-
-		if (eol >= remainder)
-		{
-			if (eols_size < num_of_lines + 1)
-			{
-				eols_size += 5;
-				eols = realloc(eols, eols_size * sizeof(int));
-			}
-			eols[num_of_lines] = eols[num_of_lines - 1] + remainder;
-			num_of_lines++;
-			break;
-		}
-
-		int temp = eol;
-
-		while (body[eols[num_of_lines - 1] + eol] != ' ' && eol)
-			--eol;
-
-		if (eol == 0)
-			eol = temp;
-		else
-			eol++;
-
-		remainder -= eol;
-		if (eols_size < num_of_lines + 1)
-		{
-			eols_size += 5;
-			eols = realloc(eols, eols_size * sizeof(int));
-		}
-		eols[num_of_lines] = eols[num_of_lines - 1] + eol;
-		num_of_lines++;
 	}
 
 	unsigned int x = pos_x;
 	unsigned int y = pos_y;
 	unsigned int text_height = font->ascent - font->descent;
-	unsigned int height = (num_of_lines - 2) * line_spacing + (num_of_lines - 1) * text_height + 2 * padding;
+	unsigned int height = (num_of_lines - 1) * line_spacing + num_of_lines * text_height + 2 * padding;
 
 	if (corner == TOP_RIGHT || corner == BOTTOM_RIGHT)
 		x = screen_width - width - border_size * 2 - pos_x;
@@ -139,14 +132,13 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			for (int i = 1; i < num_of_lines; i++)
-				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * (i - 1) + text_height * i + padding, (FcChar8 *)body + eols[i - 1], eols[i] - eols[i - 1]);
+			for (int i = 0; i < num_of_lines; i++)
+				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding, (FcChar8 *)words[i], strlen(words[i]));
 		}
 		if (event.type == ButtonPress)
 			break;
 	}
 
-	free(eols);
 	XftDrawDestroy(draw);
 	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
