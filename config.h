@@ -14,3 +14,6 @@ enum corners { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT };
 enum corners corner = TOP_RIGHT;
 
 static const unsigned int duration = 5; /* in seconds */
+
+#define KEY "q" // Delete this line to disable dismiss with shortcut
+#define MOD Mod1Mask

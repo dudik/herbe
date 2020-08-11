@@ -136,6 +136,10 @@ int main(int argc, char *argv[])
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
+	#ifdef KEY
+		XGrabKey(display, XKeysymToKeycode(display, XStringToKeysym(KEY)), MOD, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	#endif
+
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 
 	XMapWindow(display, window);
@@ -151,7 +155,7 @@ int main(int argc, char *argv[])
 			for (int i = 0; i < num_of_lines; i++)
 				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding, (FcChar8 *)words[i], strlen(words[i]));
 		}
-		if (event.type == ButtonPress)
+		if (event.type == ButtonPress || event.type == KeyPress)
 			break;
 	}
 
