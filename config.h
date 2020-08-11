@@ -1,3 +1,5 @@
+#include <X11/keysymdef.h>
+
 static const char *background_color = "#3e3e3e";
 static const char *border_color = "#ececec";
 static const char *font_color = "#ececec";
@@ -15,5 +17,5 @@ enum corners corner = TOP_RIGHT;
 
 static const unsigned int duration = 5; /* in seconds */
 
-#define KEY "q" // Delete this line to disable dismiss with shortcut
-#define MOD Mod1Mask
+#define SHORTCUT_KEY XK_space // Delete this line to disable dismiss with shortcut
+#define SHORTCUT_MOD ControlMask

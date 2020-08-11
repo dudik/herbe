@@ -136,8 +136,15 @@ int main(int argc, char *argv[])
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
-	#ifdef KEY
-		XGrabKey(display, XKeysymToKeycode(display, XStringToKeysym(KEY)), MOD, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	#ifdef SHORTCUT_KEY
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | LockMask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | Mod2Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | Mod3Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | LockMask | Mod2Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | LockMask | Mod3Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | Mod2Mask | Mod3Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, XKeysymToKeycode(display, SHORTCUT_KEY), SHORTCUT_MOD | LockMask | Mod2Mask | Mod3Mask, DefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 	#endif
 
 	XSelectInput(display, window, ExposureMask | ButtonPress);
