@@ -24,23 +24,31 @@ static void die(const char *format, ...)
 
 int get_max_len(char *body, XftFont *font, int max_text_width)
 {
-	int body_len = strlen(body);
+	int eol = strlen(body);
 	XGlyphInfo info;
-	XftTextExtentsUtf8(display, font, (FcChar8 *)body, body_len, &info);
+	XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
 
-	if (info.width < max_text_width)
-		return body_len;
-
-	int eol = max_text_width / font->max_advance_width;
-	info.width = 0;
-
-	while (info.width < max_text_width)
+	if (info.width > max_text_width)
 	{
-		eol++;
-		XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+
+		eol = max_text_width / font->max_advance_width;
+		info.width = 0;
+
+		while (info.width < max_text_width)
+		{
+			eol++;
+			XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+		}
+
+		eol--;
 	}
 
-	eol--;
+	for (int i = 0; i < eol; i++)
+		if (body[i] == '\n')
+			return ++i;
+
+	if (info.width < max_text_width)
+		return eol;
 
 	int temp = eol;
 
