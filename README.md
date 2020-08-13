@@ -5,6 +5,27 @@
 
 ## Usage
 ```shell
+$ herbe # command without options or arguments will print usage info
+Usage: herbe [OPTION ARG...] body 
+
+OPTIONS:
+long               | short | default ARG  
+-------------------|-------|-----------
+--border           |  -b   | 2
+--pos-x            |  -x   | 30
+--pos-y            |  -y   | 60
+--width            |  -w   | 450
+--padding          |  -p   | 15
+--line-spacing     |  -l   | 5
+--font             |  -f   | 'Inconsolata:style=Medium:size=12'
+--foreground-color |  -C   | '#ececec'
+--background-color |  -c   | '#3e3e3e'
+--border-color     |  -B   | '#ececec'
+--expire-time      |  -t   | 5
+--anchor           |  -a   | 3
+```
+
+``` shell
 herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Minimal and lightweight."
 ```
 will display the notification shown above
