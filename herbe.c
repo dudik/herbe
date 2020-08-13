@@ -67,7 +67,9 @@ int main(int argc, char *argv[])
 		die("Usage: %s body", argv[0]);
 
 	signal(SIGALRM, expire);
-	alarm(duration);
+
+	if (duration != 0)
+		alarm(duration);
 
 	display = XOpenDisplay(0);
 
