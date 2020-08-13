@@ -7,6 +7,10 @@
 #include <string.h>
 #include <stdarg.h>
 
+#define OPTPARSE_IMPLEMENTATION
+#define OPTPARSE_API static
+#include "optparse.h"
+
 #include "config.h"
 
 Display *display;
@@ -24,31 +28,23 @@ static void die(const char *format, ...)
 
 int get_max_len(char *body, XftFont *font, int max_text_width)
 {
-	int eol = strlen(body);
+	int body_len = strlen(body);
 	XGlyphInfo info;
-	XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
-
-	if (info.width > max_text_width)
-	{
-
-		eol = max_text_width / font->max_advance_width;
-		info.width = 0;
-
-		while (info.width < max_text_width)
-		{
-			eol++;
-			XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
-		}
-
-		eol--;
-	}
-
-	for (int i = 0; i < eol; i++)
-		if (body[i] == '\n')
-			return ++i;
+	XftTextExtentsUtf8(display, font, (FcChar8 *)body, body_len, &info);
 
 	if (info.width < max_text_width)
-		return eol;
+		return body_len;
+
+	int eol = max_text_width / font->max_advance_width;
+	info.width = 0;
+
+	while (info.width < max_text_width)
+	{
+		eol++;
+		XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+	}
+
+	eol--;
 
 	int temp = eol;
 
@@ -69,15 +65,86 @@ void expire()
 	XFlush(display);
 }
 
+void parse_commandline(struct optparse *options)
+{
+
+  int option;
+
+  while ((option = optparse_long(options, longopts, NULL)) != -1)
+  {
+    switch (option)
+    {
+	    case 'b':
+	      border_size=atoi(options->optarg);
+	      break;
+	    case 'x':
+	      pos_x=atoi(options->optarg);
+	      break;
+	    case 'y':
+	      pos_y=atoi(options->optarg);
+	      break;
+	    case 'w':
+	      width=atoi(options->optarg);
+	      break;
+	    case 'p':
+	      padding=atoi(options->optarg);
+	      break;
+	    case 'l':
+	      line_spacing=atoi(options->optarg);
+	      break;
+	    case 'f':
+	      font_pattern=options->optarg;
+	      break;
+	    case 'C':
+	      font_color=options->optarg;
+	      break;
+	    case 'c':
+	      background_color=options->optarg;
+	      break;
+	    case 'B':
+	      border_color=options->optarg;
+	      break;
+	    case 't':
+	      duration=atoi(options->optarg);
+	      break;
+	    case 'a':
+	      corner=atoi(options->optarg);
+	      break;
+	    case '?':
+	      die(options->errmsg);
+	  }
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc == 1)
-		die("Usage: %s body", argv[0]);
+		die("%s",
+                "Usage: herbe [OPTION ARG...] body \n\n"
+                "OPTIONS:\n"
+                "long               | short | default ARG  \n"
+                "-------------------|-------|-----------\n"
+                "--border           |  -b   | 2\n"
+                "--pos-x            |  -x   | 30\n"
+                "--pos-y            |  -y   | 60\n"
+                "--width            |  -w   | 450\n"
+                "--padding          |  -p   | 15\n"
+                "--line-spacing     |  -l   | 5\n"
+                "--font             |  -f   | 'Inconsolata:style=Medium:size=12'\n"
+                "--foreground-color |  -C   | '#ececec'\n"
+                "--background-color |  -c   | '#3e3e3e'\n"
+                "--border-color     |  -B   | '#ececec'\n"
+                "--expire-time      |  -t   | 5\n"
+                "--anchor           |  -a   | 3\n"
+        );
+
+	struct optparse options;
+
+	optparse_init(&options, argv);
+	parse_commandline(&options);
 
 	signal(SIGALRM, expire);
-
-	if (duration != 0)
-		alarm(duration);
+	alarm(duration);
 
 	display = XOpenDisplay(0);
 
@@ -109,9 +176,10 @@ int main(int argc, char *argv[])
 	if (!words)
 		die("malloc failed");
 
-	for (int i = 1; i < argc; i++)
+	char *arg; // non option arguments
+	while ((arg = optparse_arg(&options)))
 	{
-		char *body = argv[i];
+		char *body = arg;
 
 		for (unsigned int eol = get_max_len(body, font, max_text_width); eol <= strlen(body) && eol; body += eol, num_of_lines++, eol = get_max_len(body, font, max_text_width))
 		{
@@ -134,11 +202,17 @@ int main(int argc, char *argv[])
 	unsigned int text_height = font->ascent - font->descent;
 	unsigned int height = (num_of_lines - 1) * line_spacing + num_of_lines * text_height + 2 * padding;
 
-	if (corner == TOP_RIGHT || corner == BOTTOM_RIGHT)
+	if (corner == TOP_RIGHT || corner ==  BOTTOM_RIGHT || corner ==  MIDDLE_RIGHT)
 		x = screen_width - width - border_size * 2 - pos_x;
 
-	if (corner == BOTTOM_LEFT || corner == BOTTOM_RIGHT)
+	else if (corner == TOP_CENTER || corner ==  MIDDLE_CENTER || corner ==  BOTTOM_CENTER)
+		x = (screen_width - width)/2;
+
+	if (corner == BOTTOM_LEFT || corner ==  BOTTOM_RIGHT || corner ==  BOTTOM_CENTER)
 		y = screen_height - height - border_size * 2 - pos_y;
+
+	else if (corner == MIDDLE_LEFT || corner ==  MIDDLE_CENTER || corner ==  MIDDLE_RIGHT)
+		y = (screen_height - height)/2;
 
 	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen), CopyFromParent, visual,
 						   CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
