@@ -125,6 +125,8 @@ int main(int argc, char *argv[])
 			if (!words[num_of_lines])
 				die("malloc failed");
 			strncpy(words[num_of_lines], body, eol);
+			if (eol >= 1 && words[num_of_lines][eol-1] == '\n')
+				words[num_of_lines][eol-1] = '\0';
 			words[num_of_lines][eol] = '\0';
 		}
 	}
