@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
+#include <fcntl.h>
+#include <semaphore.h>
 
 #include "config.h"
 
@@ -75,9 +77,8 @@ int main(int argc, char *argv[])
 		die("Usage: %s body", argv[0]);
 
 	signal(SIGALRM, expire);
-
-	if (duration != 0)
-		alarm(duration);
+	signal(SIGTERM, expire);
+	signal(SIGINT, expire);
 
 	display = XOpenDisplay(0);
 
@@ -150,6 +151,12 @@ int main(int argc, char *argv[])
 
 	XMapWindow(display, window);
 
+	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
+	sem_wait(mutex);
+
+	if (duration != 0)
+		alarm(duration);
+
 	while (1)
 	{
 		XEvent event;
@@ -164,6 +171,10 @@ int main(int argc, char *argv[])
 		if (event.type == ButtonPress)
 			break;
 	}
+
+	sem_post(mutex);
+	sem_close(mutex);
+	sem_unlink("/herbe");
 
 	for (int i = 0; i < num_of_lines; i++)
 		free(words[i]);
