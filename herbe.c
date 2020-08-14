@@ -174,7 +174,6 @@ int main(int argc, char *argv[])
 
 	sem_post(mutex);
 	sem_close(mutex);
-	sem_unlink("/herbe");
 
 	for (int i = 0; i < num_of_lines; i++)
 		free(words[i]);
