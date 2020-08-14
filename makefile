@@ -1,5 +1,5 @@
 default:
-	gcc herbe.c -Wall -Wextra -pedantic -lX11 -lXft -I/usr/include/freetype2 -lm -o herbe
+	egcc herbe.c -Wall -Wextra -pedantic -I/usr/X11R6/include -L/usr/X11R6/lib -lX11 -lXft -I/usr/X11R6/include/freetype2 -lm -o herbe
 
 install: default
 	cp herbe /usr/local/bin
