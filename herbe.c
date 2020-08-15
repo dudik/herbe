@@ -46,8 +46,10 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 	}
 
 	for (int i = 0; i < eol; i++)
-		if (body[i] == '\n')
+		if (body[i] == '\n') {
+			body[i] = ' ';
 			return ++i;
+		}
 
 	if (info.width < max_text_width)
 		return eol;
