@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 		die("Usage: %s body", argv[0]);
 
+	signal(SIGUSR1, SIG_IGN);
 	signal(SIGALRM, expire);
 	signal(SIGTERM, expire);
 	signal(SIGINT, expire);
@@ -155,6 +156,8 @@ int main(int argc, char *argv[])
 
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
 	sem_wait(mutex);
+
+	signal(SIGUSR1, expire);
 
 	if (duration != 0)
 		alarm(duration);
