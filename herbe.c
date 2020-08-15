@@ -11,8 +11,11 @@
 
 #include "config.h"
 
+#define EXIT_ACTION 3
+
 Display *display;
 Window window;
+int exit_code = EXIT_SUCCESS;
 
 static void die(const char *format, ...)
 {
@@ -46,7 +49,8 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 	}
 
 	for (int i = 0; i < eol; i++)
-		if (body[i] == '\n') {
+		if (body[i] == '\n')
+		{
 			body[i] = ' ';
 			return ++i;
 		}
@@ -73,6 +77,12 @@ void expire()
 	XFlush(display);
 }
 
+void action()
+{
+	exit_code = EXIT_ACTION;
+	expire();
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc == 1)
@@ -81,6 +91,8 @@ int main(int argc, char *argv[])
 	signal(SIGALRM, expire);
 	signal(SIGTERM, expire);
 	signal(SIGINT, expire);
+	signal(SIGUSR1, SIG_IGN);
+	signal(SIGUSR2, SIG_IGN);
 
 	display = XOpenDisplay(0);
 
@@ -156,6 +168,9 @@ int main(int argc, char *argv[])
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
 	sem_wait(mutex);
 
+	signal(SIGUSR1, expire);
+	signal(SIGUSR2, action);
+
 	if (duration != 0)
 		alarm(duration);
 
@@ -171,7 +186,15 @@ int main(int argc, char *argv[])
 				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding, (FcChar8 *)words[i], strlen(words[i]));
 		}
 		if (event.type == ButtonPress)
-			break;
+		{
+			if (event.xbutton.button == DISMISS_BUTTON)
+				break;
+			else if (event.xbutton.button == ACTION_BUTTON)
+			{
+				exit_code = EXIT_ACTION;
+				break;
+			}
+		}
 	}
 
 	sem_post(mutex);
@@ -186,5 +209,5 @@ int main(int argc, char *argv[])
 	XftFontClose(display, font);
 	XCloseDisplay(display);
 
-	exit(EXIT_SUCCESS);
+	exit(exit_code);
 }
