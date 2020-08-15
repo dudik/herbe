@@ -35,7 +35,6 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 
 	if (info.width > max_text_width)
 	{
-
 		eol = max_text_width / font->max_advance_width;
 		info.width = 0;
 
@@ -73,6 +72,7 @@ void expire()
 {
 	XEvent event;
 	event.type = ButtonPress;
+	event.xbutton.button = DISMISS_BUTTON;
 	XSendEvent(display, window, 0, 0, &event);
 	XFlush(display);
 }
