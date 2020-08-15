@@ -5,9 +5,47 @@
 
 ## Usage
 ```shell
-herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Minimal and lightweight."
+$ herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Minimal and lightweight."
 ```
 will display the notification shown above
+
+### Dismiss a notification
+A notification can be dismissed either by clicking on it with `DISMISS_BUTTON` (set in config.h, defaults to left mouse button) or sending a `SIGUSR1` signal to it:
+```shell
+$ pkill -SIGUSR1 herbe
+```
+
+### Actions
+Action is a piece of shell code that runs when a notification gets accepted. Accepting a notification is the same as dismissing it, but you have to use either `ACTION_BUTTON` (defaults to right mouse button) or the `SIGUSR2` signal.
+An accepted notification always returns exit code 3. To specify an action:
+```shell
+$ herbe "Notificatio body" ; [ $? -eq 3 ] && echo "This is an action"
+```
+Where everything after `&&` is the action and will get executed after the notification gets accepted.
+
+### Notifications don't show up
+Most likely a running notification got terminated forcefully (SIGKILL or any uncaught signal) which caused the semaphore not getting unlocked. First, kill any `herbe` instance that is stuck:
+```shell
+$ pkill -SIGKILL herbe
+```
+Then just call `herbe` without any arguments:
+```shell
+$ herbe
+```
+Notifications should now show up as expected.
+
+Don't ever send any signals to `herbe` except these:
+```shell
+# same as pkill -SIGTERM herbe, terminates every running herbe process
+$ pkill herbe
+
+$ pkill -SIGUSR1 herbe
+$ pkill -SIGUSR2 herbe
+```
+And you should be fine. That's all you really need to interact with `herbe`.
+
+### Multiple notifications
+Notifications are put in a queue and shown one after another in order of creation (first in, first out). They don't overlap and each one is shown for its entire duration.
 
 ## Installation
 ### Dependencies
