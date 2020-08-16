@@ -25,7 +25,7 @@ $ pkill -SIGUSR1 herbe
 Action is a piece of shell code that runs when a notification gets accepted. Accepting a notification is the same as dismissing it, but you have to use either `ACTION_BUTTON` (defaults to right mouse button) or the `SIGUSR2` signal.
 An accepted notification always returns exit code 3. To specify an action:
 ```shell
-$ herbe "Notificatio body" ; [ $? -eq 3 ] && echo "This is an action"
+$ herbe "Notification body" ; [ $? -eq 3 ] && echo "This is an action"
 ```
 Where everything after `&&` is the action and will get executed after the notification gets accepted.
 
@@ -42,7 +42,7 @@ But by default `herbe` prints `\n` literally:
 ```shell
 $ herbe "First line\nStill the first line"
 ```
-Output of other programs will get printed correctly, just make to escape it (so you don't end up with every word on a separate line):
+Output of other programs will get printed correctly, just make sure to escape it (so you don't end up with every word on a separate line):
 ```shell
 $ herbe "$(ps axch -o cmd:15,%cpu --sort=-%cpu | head)"
 ```
