@@ -9,6 +9,12 @@ $ herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Mini
 ```
 will display the notification shown above
 
+* [Dismiss a notification](#dismiss-a-notification)
+* [Actions](#actions)
+* [Newlines](#newlines)
+* [Multiple notifications](#multiple-notifications)
+* [Notifications don't show up](#notifications-dont-show-up)
+
 ### Dismiss a notification
 A notification can be dismissed either by clicking on it with `DISMISS_BUTTON` (set in config.h, defaults to left mouse button) or sending a `SIGUSR1` signal to it:
 ```shell
@@ -22,6 +28,27 @@ An accepted notification always returns exit code 3. To specify an action:
 $ herbe "Notificatio body" ; [ $? -eq 3 ] && echo "This is an action"
 ```
 Where everything after `&&` is the action and will get executed after the notification gets accepted.
+
+### Newlines
+Every command line argument gets printed on a separate line by default e.g.:
+```shell
+$ herbe "First line" "Second line" "Third line" ...
+```
+You can also use `\n` e.g. in `bash`:
+```shell
+$ herbe $'First line\nSecond line\nThird line'
+```
+But by default `herbe` prints `\n` literally:
+```shell
+$ herbe "First line\nStill the first line"
+```
+Output of other programs will get printed correctly, just make to escape it (so you don't end up with every word on a separate line):
+```shell
+$ herbe "$(ps axch -o cmd:15,%cpu --sort=-%cpu | head)"
+```
+
+### Multiple notifications
+Notifications are put in a queue and shown one after another in order of creation (first in, first out). They don't overlap and each one is shown for its entire duration.
 
 ### Notifications don't show up
 Most likely a running notification got terminated forcefully (SIGKILL or any uncaught signal) which caused the semaphore not getting unlocked. First, kill any `herbe` instance that is stuck:
@@ -43,9 +70,6 @@ $ pkill -SIGUSR1 herbe
 $ pkill -SIGUSR2 herbe
 ```
 And you should be fine. That's all you really need to interact with `herbe`.
-
-### Multiple notifications
-Notifications are put in a queue and shown one after another in order of creation (first in, first out). They don't overlap and each one is shown for its entire duration.
 
 ## Installation
 ### Dependencies
