@@ -68,19 +68,13 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 		return ++eol;
 }
 
-void expire()
+void expire(int sig)
 {
 	XEvent event;
 	event.type = ButtonPress;
-	event.xbutton.button = DISMISS_BUTTON;
+	event.xbutton.button = (sig == SIGUSR2) ? (ACTION_BUTTON) : (DISMISS_BUTTON);
 	XSendEvent(display, window, 0, 0, &event);
 	XFlush(display);
-}
-
-void action()
-{
-	exit_code = EXIT_ACTION;
-	expire();
 }
 
 int main(int argc, char *argv[])
@@ -91,11 +85,21 @@ int main(int argc, char *argv[])
 		die("Usage: %s body", argv[0]);
 	}
 
-	signal(SIGALRM, expire);
-	signal(SIGTERM, expire);
-	signal(SIGINT, expire);
-	signal(SIGUSR1, SIG_IGN);
-	signal(SIGUSR2, SIG_IGN);
+	struct sigaction act_expire, act_ignore;
+	act_expire.sa_handler = expire;
+	act_expire.sa_flags = SA_RESTART;
+	sigemptyset(&act_expire.sa_mask);
+
+	act_ignore.sa_handler = SIG_IGN;
+	act_ignore.sa_flags = 0;
+	sigemptyset(&act_ignore.sa_mask);
+
+	sigaction(SIGALRM, &act_expire, 0);
+	sigaction(SIGTERM, &act_expire, 0);
+	sigaction(SIGINT, &act_expire, 0);
+
+	sigaction(SIGUSR1, &act_ignore, 0);
+	sigaction(SIGUSR2, &act_ignore, 0);
 
 	display = XOpenDisplay(0);
 
@@ -171,8 +175,8 @@ int main(int argc, char *argv[])
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
 	sem_wait(mutex);
 
-	signal(SIGUSR1, expire);
-	signal(SIGUSR2, action);
+	sigaction(SIGUSR1, &act_expire, 0);
+	sigaction(SIGUSR2, &act_expire, 0);
 
 	if (duration != 0)
 		alarm(duration);
