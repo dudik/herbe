@@ -11,11 +11,13 @@
 
 #include "config.h"
 
-#define EXIT_ACTION 3
+#define EXIT_ACTION 0
+#define EXIT_FAIL 1
+#define EXIT_DISMISS 2
 
 Display *display;
 Window window;
-int exit_code = EXIT_SUCCESS;
+int exit_code = EXIT_DISMISS;
 
 static void die(const char *format, ...)
 {
@@ -24,7 +26,7 @@ static void die(const char *format, ...)
 	vfprintf(stderr, format, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
-	exit(EXIT_FAILURE);
+	exit(EXIT_FAIL);
 }
 
 int get_max_len(char *body, XftFont *font, int max_text_width)
