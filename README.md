@@ -20,12 +20,13 @@ A notification can be dismissed either by clicking on it with `DISMISS_BUTTON` (
 ```shell
 $ pkill -SIGUSR1 herbe
 ```
+Dismissed notifications return exit code 2.
 
 ### Actions
 Action is a piece of shell code that runs when a notification gets accepted. Accepting a notification is the same as dismissing it, but you have to use either `ACTION_BUTTON` (defaults to right mouse button) or the `SIGUSR2` signal.
-An accepted notification always returns exit code 3. To specify an action:
+An accepted notification always returns exit code 0. To specify an action:
 ```shell
-$ herbe "Notification body" ; [ $? -eq 3 ] && echo "This is an action"
+$ herbe "Notification body" && echo "This is an action"
 ```
 Where everything after `&&` is the action and will get executed after the notification gets accepted.
 
