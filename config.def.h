@@ -1,4 +1,4 @@
-static const char *background_color = "#0000FF";
+static const char *background_color = "#3e3e3e";
 static const char *border_color = "#ececec";
 static const char *font_color = "#ececec";
 static const char *font_pattern = "Inconsolata:style=Medium:size=12";
