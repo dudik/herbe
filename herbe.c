@@ -29,11 +29,11 @@ static void die(const char *format, ...)
 	exit(EXIT_FAIL);
 }
 
-int get_max_len(char *body, XftFont *font, int max_text_width)
+int get_max_len(char *string, XftFont *font, int max_text_width)
 {
-	int eol = strlen(body);
+	int eol = strlen(string);
 	XGlyphInfo info;
-	XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+	XftTextExtentsUtf8(display, font, (FcChar8 *)string, eol, &info);
 
 	if (info.width > max_text_width)
 	{
@@ -43,16 +43,16 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 		while (info.width < max_text_width)
 		{
 			eol++;
-			XftTextExtentsUtf8(display, font, (FcChar8 *)body, eol, &info);
+			XftTextExtentsUtf8(display, font, (FcChar8 *)string, eol, &info);
 		}
 
 		eol--;
 	}
 
 	for (int i = 0; i < eol; i++)
-		if (body[i] == '\n')
+		if (string[i] == '\n')
 		{
-			body[i] = ' ';
+			string[i] = ' ';
 			return ++i;
 		}
 
@@ -61,7 +61,7 @@ int get_max_len(char *body, XftFont *font, int max_text_width)
 
 	int temp = eol;
 
-	while (body[eol] != ' ' && eol)
+	while (string[eol] != ' ' && eol)
 		--eol;
 
 	if (eol == 0)
@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
 	}
 
 	struct sigaction act_expire, act_ignore;
+
 	act_expire.sa_handler = expire;
 	act_expire.sa_flags = SA_RESTART;
 	sigemptyset(&act_expire.sa_mask);
@@ -103,9 +104,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGUSR1, &act_ignore, 0);
 	sigaction(SIGUSR2, &act_ignore, 0);
 
-	display = XOpenDisplay(0);
-
-	if (display == 0)
+	if (!(display = XOpenDisplay(0)))
 		die("Cannot open display");
 
 	int screen = DefaultScreen(display);
@@ -115,41 +114,40 @@ int main(int argc, char *argv[])
 	int screen_width = DisplayWidth(display, screen);
 	int screen_height = DisplayHeight(display, screen);
 
-	XftColor color;
-
 	XSetWindowAttributes attributes;
 	attributes.override_redirect = True;
+	XftColor color;
 	XftColorAllocName(display, visual, colormap, background_color, &color);
 	attributes.background_pixel = color.pixel;
 	XftColorAllocName(display, visual, colormap, border_color, &color);
 	attributes.border_pixel = color.pixel;
 
-	XftFont *font = XftFontOpenName(display, screen, font_pattern);
-
 	int num_of_lines = 0;
 	int max_text_width = width - 2 * padding;
-	int words_size = 5;
-	char **words = malloc(words_size * sizeof(char *));
-	if (!words)
+	int lines_size = 5;
+	char **lines = malloc(lines_size * sizeof(char *));
+	if (!lines)
 		die("malloc failed");
+
+	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
 	for (int i = 1; i < argc; i++)
 	{
-		char *body = argv[i];
-
-		for (unsigned int eol = get_max_len(body, font, max_text_width); eol <= strlen(body) && eol; body += eol, num_of_lines++, eol = get_max_len(body, font, max_text_width))
+		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol <= strlen(argv[i]) && eol; argv[i] += eol, num_of_lines++, eol = get_max_len(argv[i], font, max_text_width))
 		{
-			if (words_size <= num_of_lines)
+			if (lines_size <= num_of_lines)
 			{
-				words = realloc(words, (words_size += 5) * sizeof(char *));
-				if (!words)
+				lines = realloc(lines, (lines_size += 5) * sizeof(char *));
+				if (!lines)
 					die("malloc failed");
 			}
-			words[num_of_lines] = malloc((eol + 1) * sizeof(char));
-			if (!words[num_of_lines])
+
+			lines[num_of_lines] = malloc((eol + 1) * sizeof(char));
+			if (!lines[num_of_lines])
 				die("malloc failed");
-			strncpy(words[num_of_lines], body, eol);
-			words[num_of_lines][eol] = '\0';
+
+			strncpy(lines[num_of_lines], argv[i], eol);
+			lines[num_of_lines][eol] = '\0';
 		}
 	}
 
@@ -164,14 +162,13 @@ int main(int argc, char *argv[])
 	if (corner == BOTTOM_LEFT || corner == BOTTOM_RIGHT)
 		y = screen_height - height - border_size * 2 - pos_y;
 
-	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen), CopyFromParent, visual,
-						   CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
+	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen),
+						   CopyFromParent, visual, CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
 	XSelectInput(display, window, ExposureMask | ButtonPress);
-
 	XMapWindow(display, window);
 
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
@@ -183,7 +180,7 @@ int main(int argc, char *argv[])
 	if (duration != 0)
 		alarm(duration);
 
-	while (1)
+	for (;;)
 	{
 		XEvent event;
 		XNextEvent(display, &event);
@@ -192,9 +189,10 @@ int main(int argc, char *argv[])
 		{
 			XClearWindow(display, window);
 			for (int i = 0; i < num_of_lines; i++)
-				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding, (FcChar8 *)words[i], strlen(words[i]));
+				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding,
+								  (FcChar8 *)lines[i], strlen(lines[i]));
 		}
-		if (event.type == ButtonPress)
+		else if (event.type == ButtonPress)
 		{
 			if (event.xbutton.button == DISMISS_BUTTON)
 				break;
@@ -210,13 +208,13 @@ int main(int argc, char *argv[])
 	sem_close(mutex);
 
 	for (int i = 0; i < num_of_lines; i++)
-		free(words[i]);
+		free(lines[i]);
 
-	free(words);
+	free(lines);
 	XftDrawDestroy(draw);
 	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
 	XCloseDisplay(display);
 
-	exit(exit_code);
+	return exit_code;
 }
