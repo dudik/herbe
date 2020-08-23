@@ -56,7 +56,7 @@ int get_max_len(char *string, XftFont *font, int max_text_width)
 			return ++i;
 		}
 
-	if (info.width < max_text_width)
+	if (info.width <= max_text_width)
 		return eol;
 
 	int temp = eol;
@@ -133,13 +133,13 @@ int main(int argc, char *argv[])
 
 	for (int i = 1; i < argc; i++)
 	{
-		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol <= strlen(argv[i]) && eol; argv[i] += eol, num_of_lines++, eol = get_max_len(argv[i], font, max_text_width))
+		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol; argv[i] += eol, num_of_lines++, eol = get_max_len(argv[i], font, max_text_width))
 		{
 			if (lines_size <= num_of_lines)
 			{
 				lines = realloc(lines, (lines_size += 5) * sizeof(char *));
 				if (!lines)
-					die("malloc failed");
+					die("realloc failed");
 			}
 
 			lines[num_of_lines] = malloc((eol + 1) * sizeof(char));
