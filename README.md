@@ -1,7 +1,9 @@
 # 🌱 herbe
 > Daemon-less notifications without D-Bus. Minimal and lightweight.
 
-![herbe](https://raw.githubusercontent.com/dudik/herbe/master/herbe.png)
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/24730635/90975811-cd62fd00-e537-11ea-9169-92e68a71d0a0.gif" />
+</p>
 
 ## Usage
 ```shell
