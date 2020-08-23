@@ -6,10 +6,6 @@
 </p>
 
 ## Usage
-```shell
-$ herbe "herbe notifications" " " "Daemon-less notifications without D-Bus. Minimal and lightweight."
-```
-will display the notification shown above
 
 * [Dismiss a notification](#dismiss-a-notification)
 * [Actions](#actions)
