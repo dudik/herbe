@@ -5,13 +5,21 @@
   <img src="https://user-images.githubusercontent.com/24730635/90975811-cd62fd00-e537-11ea-9169-92e68a71d0a0.gif" />
 </p>
 
-## Usage
+## Table of contents
 
+* [Patches](#patches)
 * [Dismiss a notification](#dismiss-a-notification)
 * [Actions](#actions)
 * [Newlines](#newlines)
 * [Multiple notifications](#multiple-notifications)
 * [Notifications don't show up](#notifications-dont-show-up)
+
+### Patches
+[List of available patches](https://github.com/dudik/herbe/pulls?q=is%3Aopen+is%3Apr+label%3Apatch)
+
+To create a new patch you'll have to open a pull request with your changes. Append `.diff` to the pull request URL to get a downloadable diff file. Don't forget to prefix the title with `patch:` and to apply the `patch` label to it. For inspiration, look at [my Xresources patch](https://github.com/dudik/herbe/pull/11). Thank you.
+
+_Note: This patching method was heavily inspired by [dylan's sowm](https://github.com/dylanaraps/sowm)._
 
 ### Dismiss a notification
 A notification can be dismissed either by clicking on it with `DISMISS_BUTTON` (set in config.h, defaults to left mouse button) or sending a `SIGUSR1` signal to it:
