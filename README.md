@@ -79,6 +79,10 @@ $ pkill -SIGUSR2 herbe
 And you should be fine. That's all you really need to interact with `herbe`.
 
 ## Installation
+[![Packaging status](https://repology.org/badge/vertical-allrepos/herbe.svg)](https://repology.org/project/herbe/versions)
+
+**Only the [herbe-git AUR package](https://aur.archlinux.org/packages/herbe-git/) is maintained by me.**
+
 ### Dependencies
 * X11 (Xlib)
 * Xft
