@@ -7,12 +7,21 @@
 
 ## Table of contents
 
-* [Patches](#patches)
-* [Dismiss a notification](#dismiss-a-notification)
-* [Actions](#actions)
-* [Newlines](#newlines)
-* [Multiple notifications](#multiple-notifications)
-* [Notifications don't show up](#notifications-dont-show-up)
+* [Usage](#usage)
+  * [Patches](#patches)
+  * [Dismiss a notification](#dismiss-a-notification)
+  * [Actions](#actions)
+  * [Newlines](#newlines)
+  * [Multiple notifications](#multiple-notifications)
+  * [Notifications don't show up](#notifications-dont-show-up)
+* [Installation](#installation)
+  * [Packages](#packages)
+  * [Dependencies](#dependencies)
+  * [Build](#build)
+* [Configuration](#configuration)
+* [Contribute](#contribute)
+
+## Usage
 
 ### Patches
 [List of available patches](https://github.com/dudik/herbe/pulls?q=is%3Aopen+is%3Apr+label%3Apatch)
@@ -79,6 +88,7 @@ $ pkill -SIGUSR2 herbe
 And you should be fine. That's all you really need to interact with `herbe`.
 
 ## Installation
+### Packages
 [![Packaging status](https://repology.org/badge/vertical-allrepos/herbe.svg)](https://repology.org/project/herbe/versions)
 
 **Only the [herbe-git AUR package](https://aur.archlinux.org/packages/herbe-git/) is maintained by me.**
