@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <fcntl.h>
-#include <semaphore.h>
 
 #include "config.h"
 
@@ -82,10 +81,7 @@ void expire(int sig)
 int main(int argc, char *argv[])
 {
 	if (argc == 1)
-	{
-		sem_unlink("/herbe");
 		die("Usage: %s body", argv[0]);
-	}
 
 	struct sigaction act_expire, act_ignore;
 
@@ -171,9 +167,6 @@ int main(int argc, char *argv[])
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 	XMapWindow(display, window);
 
-	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
-	sem_wait(mutex);
-
 	sigaction(SIGUSR1, &act_expire, 0);
 	sigaction(SIGUSR2, &act_expire, 0);
 
@@ -203,9 +196,6 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
-	sem_post(mutex);
-	sem_close(mutex);
 
 	for (int i = 0; i < num_of_lines; i++)
 		free(lines[i]);
