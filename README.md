@@ -91,6 +91,8 @@ And you should be fine. That's all you really need to interact with `herbe`.
 ### Packages
 [![Packaging status](https://repology.org/badge/vertical-allrepos/herbe.svg)](https://repology.org/project/herbe/versions)
 
+[OpenBSD patch](https://github.com/dudik/herbe/pull/4)
+
 **Only the [herbe-git AUR package](https://aur.archlinux.org/packages/herbe-git/) is maintained by me.**
 
 ### Dependencies
