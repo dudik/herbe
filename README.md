@@ -119,5 +119,7 @@ You can also use `make clean` to remove the binary from the build folder, `sudo 
 ## Configuration
 herbe is configured at compile-time by editing `config.h`. Every option should be self-explanatory. There is no `height` option because height is determined by font size and text padding.
 
+[Xresources patch](https://github.com/dudik/herbe/pull/11)
+
 ## Contribute
 If you want to report a bug or you have a feature request, feel free to [open an issue](https://github.com/dudik/herbe/issues).
