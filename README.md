@@ -93,6 +93,8 @@ And you should be fine. That's all you really need to interact with `herbe`.
 
 [OpenBSD patch](https://github.com/dudik/herbe/pull/4)
 
+[FreeBSD patch](https://github.com/dudik/herbe/pull/16)
+
 **Only the [herbe-git AUR package](https://aur.archlinux.org/packages/herbe-git/) is maintained by me.**
 
 ### Dependencies
