@@ -5,6 +5,14 @@
   <img src="https://user-images.githubusercontent.com/24730635/90975811-cd62fd00-e537-11ea-9169-92e68a71d0a0.gif" />
 </p>
 
+## Features
+* Under 200 lines of code
+* Doesn't run in the background, just displays the notification and exits
+* No external dependencies except Xlib and Xft
+* Configurable through `config.h` or Xresources ([using this patch](https://github.com/dudik/herbe/pull/11))
+* [Actions support](#actions)
+* Extensible through [patches](https://github.com/dudik/herbe/pulls?q=is%3Aopen+is%3Apr+label%3Apatch)
+
 ## Table of contents
 
 * [Usage](#usage)
@@ -100,7 +108,6 @@ And you should be fine. That's all you really need to interact with `herbe`.
 ### Dependencies
 * X11 (Xlib)
 * Xft
-* freetype2
 
 The names of packages are different depending on which distribution you use.
 For example, if you use [Void Linux](https://voidlinux.org/) you will have to install these dependencies:
