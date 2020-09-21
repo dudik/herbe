@@ -103,6 +103,8 @@ And you should be fine. That's all you really need to interact with `herbe`.
 
 [FreeBSD patch](https://github.com/dudik/herbe/pull/16)
 
+[Wayland port](https://github.com/muevoid/Wayherb) by [muevoid](https://github.com/muevoid)
+
 **Only the [herbe-git AUR package](https://aur.archlinux.org/packages/herbe-git/) is maintained by me.**
 
 ### Dependencies
