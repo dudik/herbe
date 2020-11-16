@@ -1,5 +1,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/Xrandr.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -111,8 +112,22 @@ int main(int argc, char *argv[])
 	Visual *visual = DefaultVisual(display, screen);
 	Colormap colormap = DefaultColormap(display, screen);
 
+	int screen_x = 0;
+	int screen_y = 0;
 	int screen_width = DisplayWidth(display, screen);
 	int screen_height = DisplayHeight(display, screen);
+	if(use_primary_monitor) {
+		int nMonitors;
+		XRRMonitorInfo* info = XRRGetMonitors(display, RootWindow(display, screen), 1, &nMonitors);
+		for(int i = 0; i < nMonitors; i++) {
+			if(info[i].primary) {
+				screen_x = info[i].x;
+				screen_y = info[i].y;
+				screen_width = info[i].width;
+				screen_height = info[i].height;
+			}
+		}
+	}
 
 	XSetWindowAttributes attributes;
 	attributes.override_redirect = True;
@@ -151,16 +166,16 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	unsigned int x = pos_x;
-	unsigned int y = pos_y;
+	unsigned int x = screen_x + pos_x;
+	unsigned int y = screen_y + pos_y;
 	unsigned int text_height = font->ascent - font->descent;
 	unsigned int height = (num_of_lines - 1) * line_spacing + num_of_lines * text_height + 2 * padding;
 
 	if (corner == TOP_RIGHT || corner == BOTTOM_RIGHT)
-		x = screen_width - width - border_size * 2 - pos_x;
+		x = screen_x + screen_width - width - border_size * 2 - pos_x;
 
 	if (corner == BOTTOM_LEFT || corner == BOTTOM_RIGHT)
-		y = screen_height - height - border_size * 2 - pos_y;
+		y = screen_y + screen_height - height - border_size * 2 - pos_y;
 
 	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen),
 						   CopyFromParent, visual, CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
