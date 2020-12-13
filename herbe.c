@@ -15,9 +15,14 @@
 #define EXIT_FAIL 1
 #define EXIT_DISMISS 2
 
+#define LENGTH(X) (sizeof X / sizeof X[0])
+
 Display *display;
 Window window;
 int exit_code = EXIT_DISMISS;
+
+int signals_ignore[] = {SIGALRM, SIGTERM, SIGINT,};
+int signals_expire[] = {SIGUSR1, SIGUSR2};
 
 static void die(const char *format, ...)
 {
@@ -97,12 +102,11 @@ int main(int argc, char *argv[])
 	act_ignore.sa_flags = 0;
 	sigemptyset(&act_ignore.sa_mask);
 
-	sigaction(SIGALRM, &act_expire, 0);
-	sigaction(SIGTERM, &act_expire, 0);
-	sigaction(SIGINT, &act_expire, 0);
+	for (int i = 0; i < (int)LENGTH(signals_ignore); i++)
+		sigaction(signals_ignore[i], &act_ignore, 0);
 
-	sigaction(SIGUSR1, &act_ignore, 0);
-	sigaction(SIGUSR2, &act_ignore, 0);
+	for (int i = 0; i < (int)LENGTH(signals_ignore); i++)
+		sigaction(signals_expire[i], &act_ignore, 0);
 
 	if (!(display = XOpenDisplay(0)))
 		die("Cannot open display");
