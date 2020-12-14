@@ -102,10 +102,10 @@ int main(int argc, char *argv[])
 	act_ignore.sa_flags = 0;
 	sigemptyset(&act_ignore.sa_mask);
 
-	for (int i = 0; i < (int)LENGTH(signals_ignore); i++)
+	for (unsigned int i = 0; i < LENGTH(signals_ignore); i++)
 		sigaction(signals_ignore[i], &act_ignore, 0);
 
-	for (int i = 0; i < (int)LENGTH(signals_ignore); i++)
+	for (unsinged int i = 0; i < LENGTH(signals_ignore); i++)
 		sigaction(signals_expire[i], &act_ignore, 0);
 
 	if (!(display = XOpenDisplay(0)))
