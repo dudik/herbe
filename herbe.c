@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	for (unsigned int i = 0; i < LENGTH(signals_ignore); i++)
 		sigaction(signals_ignore[i], &act_ignore, 0);
 
-	for (unsinged int i = 0; i < LENGTH(signals_ignore); i++)
+	for (unsigned int i = 0; i < LENGTH(signals_ignore); i++)
 		sigaction(signals_expire[i], &act_ignore, 0);
 
 	if (!(display = XOpenDisplay(0)))
