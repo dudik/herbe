@@ -1,13 +1,13 @@
-#include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdarg.h>
+#include <X11/Xlib.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "config.h"
 
@@ -16,7 +16,10 @@
 #define EXIT_DISMISS 2
 
 Display *display;
+XftFont *font;
 Window window;
+int num_of_lines;
+char **lines;
 int exit_code = EXIT_DISMISS;
 
 static void die(const char *format, ...)
@@ -70,6 +73,44 @@ int get_max_len(char *string, XftFont *font, int max_text_width)
 		return ++eol;
 }
 
+void freeLines() {
+	if(lines) {
+		for (int i = 0; i < num_of_lines; i++)
+			free(lines[i]);
+		free(lines);
+	}
+}
+
+void constructLines(char* strList[], int numberOfStrings) {
+	freeLines();
+	int max_text_width = width - 2 * padding;
+	num_of_lines = 0;
+	int lines_size = 5;
+	lines = malloc(lines_size * sizeof(char *));
+	if (!lines)
+		die("malloc failed");
+
+	for (int i = 0; i < numberOfStrings; i++)
+	{
+		for (unsigned int eol = get_max_len(strList[i], font, max_text_width); eol; strList[i] += eol, num_of_lines++, eol = get_max_len(strList[i], font, max_text_width))
+		{
+			if (lines_size <= num_of_lines)
+			{
+				lines = realloc(lines, (lines_size += 5) * sizeof(char *));
+				if (!lines)
+					die("realloc failed");
+			}
+			lines[num_of_lines] = malloc((eol + 1) * sizeof(char));
+			if (!lines[num_of_lines])
+				die("malloc failed");
+
+			strncpy(lines[num_of_lines], strList[i], eol);
+			lines[num_of_lines][eol] = '\0';
+		}
+	}
+}
+
+
 void expire(int sig)
 {
 	XEvent event;
@@ -121,35 +162,9 @@ int main(int argc, char *argv[])
 	attributes.background_pixel = color.pixel;
 	XftColorAllocName(display, visual, colormap, border_color, &color);
 	attributes.border_pixel = color.pixel;
+	font = XftFontOpenName(display, screen, font_pattern);
 
-	int num_of_lines = 0;
-	int max_text_width = width - 2 * padding;
-	int lines_size = 5;
-	char **lines = malloc(lines_size * sizeof(char *));
-	if (!lines)
-		die("malloc failed");
-
-	XftFont *font = XftFontOpenName(display, screen, font_pattern);
-
-	for (int i = 1; i < argc; i++)
-	{
-		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol; argv[i] += eol, num_of_lines++, eol = get_max_len(argv[i], font, max_text_width))
-		{
-			if (lines_size <= num_of_lines)
-			{
-				lines = realloc(lines, (lines_size += 5) * sizeof(char *));
-				if (!lines)
-					die("realloc failed");
-			}
-
-			lines[num_of_lines] = malloc((eol + 1) * sizeof(char));
-			if (!lines[num_of_lines])
-				die("malloc failed");
-
-			strncpy(lines[num_of_lines], argv[i], eol);
-			lines[num_of_lines][eol] = '\0';
-		}
-	}
+	constructLines(argv+1, argc-1);
 
 	unsigned int x = pos_x;
 	unsigned int y = pos_y;
@@ -207,10 +222,8 @@ int main(int argc, char *argv[])
 	sem_post(mutex);
 	sem_close(mutex);
 
-	for (int i = 0; i < num_of_lines; i++)
-		free(lines[i]);
+	freeLines();
 
-	free(lines);
 	XftDrawDestroy(draw);
 	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
