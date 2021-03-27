@@ -134,3 +134,6 @@ herbe is configured at compile-time by editing `config.h`. Every option should b
 
 ## Contribute
 If you want to report a bug or you have a feature request, feel free to [open an issue](https://github.com/dudik/herbe/issues).
+
+## Projects with herbe integration
+- [qutebrowser](https://qutebrowser.org/) supports showing web notifications via herbe, via the `content.notifications.presenter` setting.
