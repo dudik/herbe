@@ -82,10 +82,7 @@ void expire(int sig)
 int main(int argc, char *argv[])
 {
 	if (argc == 1)
-	{
-		sem_unlink("/herbe");
 		die("Usage: %s body", argv[0]);
-	}
 
 	struct sigaction act_expire, act_ignore;
 
