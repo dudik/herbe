@@ -1,5 +1,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
+#include <X11/Xresource.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -14,6 +15,13 @@
 #define EXIT_ACTION 0
 #define EXIT_FAIL 1
 #define EXIT_DISMISS 2
+
+#define XRES_STR(name)                                        \
+	if (XrmGetResource(db, "herbe." #name, "*", &type, &val)) \
+	name = val.addr
+#define XRES_INT(name)                                        \
+	if (XrmGetResource(db, "herbe." #name, "*", &type, &val)) \
+	name = strtoul(val.addr, 0, 10)
 
 Display *display;
 Window window;
@@ -106,6 +114,28 @@ int main(int argc, char *argv[])
 
 	if (!(display = XOpenDisplay(0)))
 		die("Cannot open display");
+
+	XrmInitialize();
+
+	char *res_man = XResourceManagerString(display);
+	XrmDatabase db = XrmGetStringDatabase(res_man);
+
+	char *type;
+	XrmValue val;
+
+	XRES_STR(background_color);
+	XRES_STR(border_color);
+	XRES_STR(font_color);
+	XRES_STR(font_pattern);
+
+	XRES_INT(line_spacing);
+	XRES_INT(padding);
+	XRES_INT(width);
+	XRES_INT(border_size);
+	XRES_INT(pos_x);
+	XRES_INT(pos_y);
+	XRES_INT(corner);
+	XRES_INT(duration);
 
 	int screen = DefaultScreen(display);
 	Visual *visual = DefaultVisual(display, screen);
@@ -214,6 +244,7 @@ int main(int argc, char *argv[])
 	XftDrawDestroy(draw);
 	XftColorFree(display, visual, colormap, &color);
 	XftFontClose(display, font);
+	XrmDestroyDatabase(db);
 	XCloseDisplay(display);
 
 	return exit_code;
