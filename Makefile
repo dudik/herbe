@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -pedantic -lX11 -lXft -I/usr/include/freetype2 -pthread
+CFLAGS = -Wall -Wextra -pedantic -lX11 -lXft -I/usr/include/freetype2
 
 PREFIX ?= /usr/local
 CC ?= cc
