@@ -10,14 +10,34 @@
 #include <semaphore.h>
 
 #include "config.h"
-
-#define EXIT_ACTION 0
-#define EXIT_FAIL 1
-#define EXIT_DISMISS 2
+#include "herbe.h"
 
 Display *display;
 Window window;
 int exit_code = EXIT_DISMISS;
+
+const char herbe_usage_string[] =
+    "herbe [-v] [-h] <body>\n"
+    "            -h           This help text\n"
+    "            -v           Prints current version";
+
+static void print_version(void)
+{
+    printf("herbe v%s\n", VERSION_STRING);
+}
+
+static void print_help(void)
+{
+    print_version();
+    printf("Usage: %s\n\n", herbe_usage_string);
+    exit(0);
+}
+
+static void usage(const char *err)
+{
+  fprintf(stderr, "Usage: %s\n", err);
+  exit(EXIT_FAIL);
+}
 
 static void die(const char *format, ...)
 {
@@ -27,6 +47,33 @@ static void die(const char *format, ...)
 	fprintf(stderr, "\n");
 	va_end(ap);
 	exit(EXIT_FAIL);
+}
+
+static int handle_options(const char ***argv, int *argc)
+{
+    const char **orig_argv = *argv;
+
+    while (*argc > 0) {
+        const char *cmd = (*argv)[0];
+        if (cmd[0] != '-')
+            break;
+
+        if (!strcmp(cmd, "-h")) {
+            print_help();
+        }
+        else if (!strcmp(cmd, "-v")) {
+            print_version();
+            exit(0);
+        }
+        else {
+            fprintf(stderr, "Unknown option: %s\n", cmd);
+            usage(herbe_usage_string);
+        }
+
+        (*argv)++;
+        (*argc)--;
+    }
+    return (*argv) - orig_argv;
 }
 
 int get_max_len(char *string, XftFont *font, int max_text_width)
@@ -81,11 +128,17 @@ void expire(int sig)
 
 int main(int argc, char *argv[])
 {
+	const char **av = (const char **) argv;
+
 	if (argc == 1)
 	{
 		sem_unlink("/herbe");
-		die("Usage: %s body", argv[0]);
+		usage(herbe_usage_string);
 	}
+
+	/* Look for flags.. */
+    av++;
+    handle_options(&av, &argc);
 
 	struct sigaction act_expire, act_ignore;
 
