@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
 	int screen_height = DisplayHeight(display, screen);
 
 	XSetWindowAttributes attributes;
+	attributes.event_mask = ExposureMask | ButtonPressMask;
 	attributes.override_redirect = True;
 	XftColor color;
 	XftColorAllocName(display, visual, colormap, background_color, &color);
@@ -163,12 +164,11 @@ int main(int argc, char *argv[])
 		y = screen_height - height - border_size * 2 - pos_y;
 
 	window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, border_size, DefaultDepth(display, screen),
-						   CopyFromParent, visual, CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
+						   CopyFromParent, visual, CWOverrideRedirect | CWBackPixel | CWBorderPixel | CWEventMask, &attributes);
 
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
-	XSelectInput(display, window, ExposureMask | ButtonPress);
 	XMapWindow(display, window);
 
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
