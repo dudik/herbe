@@ -122,14 +122,15 @@ int main(int argc, char *argv[])
 	XftColorAllocName(display, visual, colormap, border_color, &color);
 	attributes.border_pixel = color.pixel;
 
+	XftFont *font = XftFontOpenName(display, screen, font_pattern);
+
 	int num_of_lines = 0;
 	int max_text_width = width - 2 * padding;
+	int max_font_width = font->max_advance_width;
 	int lines_size = 5;
 	char **lines = malloc(lines_size * sizeof(char *));
 	if (!lines)
 		die("malloc failed");
-
-	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -188,9 +189,11 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			for (int i = 0; i < num_of_lines; i++)
-				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding,
-								  (FcChar8 *)lines[i], strlen(lines[i]));
+			for (int i = 0; i < num_of_lines; i++){
+				int len = strlen(lines[i]);
+				XftDrawStringUtf8(draw, &color, font, (width - len*max_font_width)/2, line_spacing * i + text_height * (i + 1) + padding,
+								  (FcChar8 *)lines[i], len);
+			}
 		}
 		else if (event.type == ButtonPress)
 		{
