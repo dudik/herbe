@@ -5,7 +5,7 @@ CC ?= cc
 
 all: herbe
 
-config.h: config.def.h
+config.h:
 	cp config.def.h config.h
 
 herbe: herbe.c config.h
