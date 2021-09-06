@@ -122,32 +122,26 @@ int main(int argc, char *argv[])
 	XftColorAllocName(display, visual, colormap, border_color, &color);
 	attributes.border_pixel = color.pixel;
 
-	int num_of_lines = 0;
 	int max_text_width = width - 2 * padding;
-	int lines_size = 5;
-	char **lines = malloc(lines_size * sizeof(char *));
-	if (!lines)
-		die("malloc failed");
+	char **lines = NULL;
+	size_t num_of_lines = 0;
 
 	XftFont *font = XftFontOpenName(display, screen, font_pattern);
 
 	for (int i = 1; i < argc; i++)
 	{
-		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol; argv[i] += eol, num_of_lines++, eol = get_max_len(argv[i], font, max_text_width))
+		for (unsigned int eol = get_max_len(argv[i], font, max_text_width); eol; argv[i] += eol, eol = get_max_len(argv[i], font, max_text_width))
 		{
-			if (lines_size <= num_of_lines)
-			{
-				lines = realloc(lines, (lines_size += 5) * sizeof(char *));
-				if (!lines)
-					die("realloc failed");
-			}
+			lines = reallocarray(lines, ++num_of_lines, sizeof(char *));
+			if (!lines)
+				die("reallocarray failed");
 
-			lines[num_of_lines] = malloc((eol + 1) * sizeof(char));
-			if (!lines[num_of_lines])
-				die("malloc failed");
+			lines[num_of_lines - 1] = reallocarray(NULL, eol + 1, sizeof(char));
+			if (!lines[num_of_lines - 1])
+				die("reallocarray failed");
 
-			strncpy(lines[num_of_lines], argv[i], eol);
-			lines[num_of_lines][eol] = '\0';
+			strncpy(lines[num_of_lines - 1], argv[i], eol);
+			lines[num_of_lines - 1][eol] = '\0';
 		}
 	}
 
@@ -188,7 +182,7 @@ int main(int argc, char *argv[])
 		if (event.type == Expose)
 		{
 			XClearWindow(display, window);
-			for (int i = 0; i < num_of_lines; i++)
+			for (size_t i = 0; i < num_of_lines; i++)
 				XftDrawStringUtf8(draw, &color, font, padding, line_spacing * i + text_height * (i + 1) + padding,
 								  (FcChar8 *)lines[i], strlen(lines[i]));
 		}
@@ -207,7 +201,7 @@ int main(int argc, char *argv[])
 	sem_post(mutex);
 	sem_close(mutex);
 
-	for (int i = 0; i < num_of_lines; i++)
+	for (size_t i = 0; i < num_of_lines; i++)
 		free(lines[i]);
 
 	free(lines);
