@@ -117,9 +117,11 @@ int main(int argc, char *argv[])
 	XSetWindowAttributes attributes;
 	attributes.override_redirect = True;
 	XftColor color;
-	XftColorAllocName(display, visual, colormap, background_color, &color);
+	if (!XftColorAllocName(display, visual, colormap, background_color, &color))
+		die("Failed to allocate background color");
 	attributes.background_pixel = color.pixel;
-	XftColorAllocName(display, visual, colormap, border_color, &color);
+	if (!XftColorAllocName(display, visual, colormap, border_color, &color))
+		die("Failed to allocate border color");
 	attributes.border_pixel = color.pixel;
 
 	int num_of_lines = 0;
@@ -130,6 +132,8 @@ int main(int argc, char *argv[])
 		die("malloc failed");
 
 	XftFont *font = XftFontOpenName(display, screen, font_pattern);
+	if (!font)
+		die("Couldn't open font");
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -166,12 +170,16 @@ int main(int argc, char *argv[])
 						   CopyFromParent, visual, CWOverrideRedirect | CWBackPixel | CWBorderPixel, &attributes);
 
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
+	if (!draw)
+		die("Failed to create Xft drawable object");
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 	XMapWindow(display, window);
 
 	sem_t *mutex = sem_open("/herbe", O_CREAT, 0644, 1);
+	if (mutex == SEM_FAILED)
+		die("Failed to open semaphore");
 	sem_wait(mutex);
 
 	sigaction(SIGUSR1, &act_expire, 0);
