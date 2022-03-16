@@ -15,9 +15,9 @@
 #define EXIT_FAIL 1
 #define EXIT_DISMISS 2
 
-Display *display;
-Window window;
-int exit_code = EXIT_DISMISS;
+static Display *display;
+static Window window;
+static int exit_code = EXIT_DISMISS;
 
 static void die(const char *format, ...)
 {
@@ -29,7 +29,7 @@ static void die(const char *format, ...)
 	exit(EXIT_FAIL);
 }
 
-int get_max_len(char *string, XftFont *font, int max_text_width)
+static int get_max_len(char *string, XftFont *font, int max_text_width)
 {
 	int eol = strlen(string);
 	XGlyphInfo info;
@@ -70,7 +70,7 @@ int get_max_len(char *string, XftFont *font, int max_text_width)
 		return ++eol;
 }
 
-void expire(int sig)
+static void expire(int sig)
 {
 	XEvent event;
 	event.type = ButtonPress;
