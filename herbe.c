@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <poll.h>
 
 #include "config.h"
 
@@ -18,6 +19,7 @@
 Display *display;
 Window window;
 int exit_code = EXIT_DISMISS;
+static volatile sig_atomic_t sig_recieved;
 
 static void die(const char *format, ...)
 {
@@ -72,11 +74,7 @@ int get_max_len(char *string, XftFont *font, int max_text_width)
 
 void expire(int sig)
 {
-	XEvent event;
-	event.type = ButtonPress;
-	event.xbutton.button = (sig == SIGUSR2) ? (ACTION_BUTTON) : (DISMISS_BUTTON);
-	XSendEvent(display, window, 0, 0, &event);
-	XFlush(display);
+	sig_recieved = sig_recieved ? sig_recieved : sig;
 }
 
 int main(int argc, char *argv[])
@@ -183,7 +181,21 @@ int main(int argc, char *argv[])
 	for (;;)
 	{
 		XEvent event;
-		XNextEvent(display, &event);
+		struct pollfd pfd = {
+			.fd = ConnectionNumber(display),
+			.events = POLLIN,
+		};
+		int pending = XPending(display) > 0 || poll(&pfd, 1, -1) > 0;
+
+		if (sig_recieved)
+		{
+			exit_code = sig_recieved == SIGUSR2 ? EXIT_ACTION : EXIT_DISMISS;
+			break;
+		}
+		else if (pending)
+			XNextEvent(display, &event);
+		else
+			continue;
 
 		if (event.type == Expose)
 		{
