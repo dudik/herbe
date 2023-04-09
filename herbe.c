@@ -168,6 +168,9 @@ int main(int argc, char *argv[])
 	XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 	XftColorAllocName(display, visual, colormap, font_color, &color);
 
+	XClassHint classhint = { "herbe", "herbe" };
+	XSetClassHint(display, window, &classhint);
+
 	XSelectInput(display, window, ExposureMask | ButtonPress);
 	XMapWindow(display, window);
 
