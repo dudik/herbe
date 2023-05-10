@@ -56,6 +56,9 @@ int get_max_len(char *string, XftFont *font, int max_text_width)
 			return ++i;
 		}
 
+	while (eol && (string[eol] & 0xC0) == 0x80)
+		--eol;
+
 	if (info.width <= max_text_width)
 		return eol;
 
